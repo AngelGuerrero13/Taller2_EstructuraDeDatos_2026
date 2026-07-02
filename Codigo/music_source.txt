@@ -1,0 +1,10 @@
+001,Fire Dance,Vivid BAD Squad,Vivid Songs,2023,0:3,music/firedance.mp3
+002,PON PON PON,Kyary Pamyu Pamyu,Moshi Moshi Harajuku,2011,0:4,music/ponpon.mp3
+003,Crossing Field,LiSA,Sword Art Online OST,2012,0:4,music/crossing.mp3
+004,Show,Ado,Utattemita,2023,0:3,music/show.mp3
+005,World is Mine,Ryo feat. Hatsune Miku,Supercell,2008,0:4,music/worldismine.mp3
+006,Bring Me To Life,Evanescence,Fallen,2003,0:3,music/bringme.mp3
+007,Radioactive,Imagine Dragons,Night Visions,2012,0:3,music/radioactive.mp3
+008,Titanium,David Guetta,Nothing but the Beat,2011,0:4,music/titanium.mp3
+009,Gimme Chocolate!!,BABYMETAL,Babymetal,2014,0:4,music/gimmechoc.mp3
+010,Despecha,Rosalia,Motomami,2022,0:2,music/despecha.mp311
