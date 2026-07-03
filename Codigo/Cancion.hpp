@@ -12,10 +12,11 @@ class Cancion{
         int anio;
         int duracionSegundos;
         string ubicacionArchivo;
+        int reproducciones;
     
     public:
         //Constructor
-        Cancion(string idInterno,string nombreCancion,string nombreArtista,string nombreAlbum,int anio,int duracionSegundos,string ubicacionArchivo);
+        Cancion(string idInterno,string nombreCancion,string nombreArtista,string nombreAlbum,int anio,int duracionSegundos,string ubicacionArchivo,int reproducciones);
         
         //Getters
         string getId();
@@ -25,9 +26,12 @@ class Cancion{
         int getAnio();
         string getDuracion();
         string getUbicacion();
+        int getReproducciones();
 
         //Setters
         void setUbicacion(string ubicacion);
+
+        void aumentarReproduccion();
 
         //Destructor
         ~Cancion();

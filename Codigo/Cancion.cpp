@@ -1,6 +1,6 @@
 #include "Cancion.hpp"
 
-Cancion::Cancion(string idInterno,string nombreCancion,string nombreArtista,string nombreAlbum,int anio,int duracionSegundos,string ubicacionArchivo){
+Cancion::Cancion(string idInterno,string nombreCancion,string nombreArtista,string nombreAlbum,int anio,int duracionSegundos,string ubicacionArchivo,int reproducciones){
     this->idInterno=idInterno;
     this->nombreCancion=nombreCancion;
     this->nombreArtista=nombreArtista;
@@ -8,6 +8,7 @@ Cancion::Cancion(string idInterno,string nombreCancion,string nombreArtista,stri
     this->anio=anio;
     this->duracionSegundos=duracionSegundos;
     this->ubicacionArchivo=ubicacionArchivo;
+    this->reproducciones = reproducciones;
 }
 string Cancion::getId(){
     return this->idInterno;
@@ -23,7 +24,7 @@ string Cancion::getAlbum(){
 }
 int Cancion::getAnio(){
     return this->anio;
-}
+}   
 string Cancion::getDuracion(){
     int minutos = this->duracionSegundos/60;
     int segundos = this->duracionSegundos%60;
@@ -32,9 +33,18 @@ string Cancion::getDuracion(){
 string Cancion::getUbicacion(){
     return this->ubicacionArchivo;
 }
+int Cancion::getReproducciones(){
+    return this->reproducciones;
+}
+
 void Cancion::setUbicacion(string ubicacionArchivo){
     this->ubicacionArchivo=ubicacionArchivo;
 }
+
+void Cancion::aumentarReproduccion(){
+    this->reproducciones++;
+}
+
 Cancion::~Cancion(){
 
 }

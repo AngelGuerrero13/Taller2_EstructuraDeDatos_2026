@@ -48,6 +48,8 @@ void Reproductor::leerArchivoCancion(string archivoCancion){
         string anio;
         string duracion;
         string ubicacionArchivo;
+        string repro;
+        int reproducciones;
 
         getline(ss,idInterno,',');
         getline(ss,nombreCancion,',');
@@ -57,12 +59,16 @@ void Reproductor::leerArchivoCancion(string archivoCancion){
         getline(ss,duracion,',');
         getline(ss,ubicacionArchivo,',');
 
+        if(getline(ss,repro,',')){
+            reproducciones = stoi(repro);
+        }
+
         int anioCancion = stoi(anio);
         int duracionSegundos = stoi(duracion);
 
         //Se crea la clase y se agrega a la lista tda
 
-        Cancion* cancion = new Cancion(idInterno,nombreCancion,nombreArtista,nombreAlbum,anioCancion,duracionSegundos,ubicacionArchivo);
+        Cancion* cancion = new Cancion(idInterno,nombreCancion,nombreArtista,nombreAlbum,anioCancion,duracionSegundos,ubicacionArchivo,reproducciones);
 
         this->canciones.insertarFinal(cancion);
 
@@ -114,6 +120,7 @@ void Reproductor::pistaAnterior(){
     if(anterior != nullptr){
         //La cancion que se va a reproducir es la cancion anteriro
         this->setCancionReproduciendo(anterior);
+        this->cancionReproduciendo->getCancion()->aumentarReproduccion();
     }
 
     //Se muestra la cancion que se reproduce ahora
@@ -141,10 +148,12 @@ void Reproductor::pistaSiguiente(){
     if(siguiente != nullptr){
         //La cancion que se va a reproducir es la cancion siguiente
         this->setCancionReproduciendo(siguiente);
+        this->cancionReproduciendo->getCancion()->aumentarReproduccion();
     //Si no hay siguiente, llegamos al final y repetimos todas
     }else if(this->repeticion == 3){
         //Volvemos al inicio
         this->setCancionReproduciendo(this->canciones.getCabeza());
+        this->cancionReproduciendo->getCancion()->aumentarReproduccion();
         //Si esta activado el modo aleatorio mezclamos la lista
         if(this->modoAleatorio){
             this->mezclarLista();
@@ -478,6 +487,7 @@ void Reproductor::saltarCancion(int posicion){
 
     //Saltamos a la cancion seleccionada y la reproducimos
     setCancionReproduciendo(cancionSaltar);
+    this->cancionReproduciendo->getCancion()->aumentarReproduccion();
     this->reproduciendo = true;
 
     imprimirEstadoActual();
@@ -582,7 +592,7 @@ void Reproductor::agregarCancionRegistro(){
     getline(cin,ubicacion);
 
     //Creamos la nueva cancion
-    Cancion* cancionNueva = new Cancion(idInterno,nombreCancion,nombreArtista,nombreAlbum,anio,duracionSegundos,ubicacion);
+    Cancion* cancionNueva = new Cancion(idInterno,nombreCancion,nombreArtista,nombreAlbum,anio,duracionSegundos,ubicacion,0);
     //La agregamos al final de la lista de canciones para no leer nuevamente todo el archivo
     this->canciones.insertarFinal(cancionNueva);
 
@@ -591,7 +601,7 @@ void Reproductor::agregarCancionRegistro(){
 
     if(archivo.is_open()){
         //Agregamos el formato que debe tener la cancion en el archivo
-        archivo<<idInterno<<","<<nombreCancion<<","<<nombreArtista<<","<<nombreAlbum<<","<<anio<<","<<duracionSegundos<<","<<ubicacion<<endl;
+        archivo<<idInterno<<","<<nombreCancion<<","<<nombreArtista<<","<<nombreAlbum<<","<<anio<<","<<duracionSegundos<<","<<ubicacion<<",0"<<endl;
         archivo.close();
         cout<<"Cancion registrada exitosamente en el archivo"<<endl;
     }else{
@@ -760,10 +770,33 @@ void Reproductor::inicializar() {
     this->cargarEstado();
 }
 
+void Reproductor::guardar(){
+
+    ofstream archivo("music_source.txt");
+
+    if(archivo.is_open()){
+
+        NodoCancion* aux = this->canciones.getCabeza();
+
+        while(aux != nullptr){
+
+            Cancion* c = aux->getCancion();
+            
+            archivo << c->getId() << "," << c->getNombreCancion() << "," 
+                    << c->getArtista() << "," << c->getAlbum() << "," 
+                    << c->getAnio() << "," << c->getDuracion() << "," 
+                    << c->getUbicacion() << "," << c->getReproducciones() << endl;
+            aux = aux->getSiguiente();
+        }
+        archivo.close();
+    }
+}
+
 //Destructor
 Reproductor::~Reproductor(){
     //Guardamos el estado
     guardarEstado();
+    guardar();
     //Eliminamos las listas para liberar memoria
     this->listaReproduccion.vaciarLista();
     this->canciones.vaciarLista();

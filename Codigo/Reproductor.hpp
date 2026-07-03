@@ -18,6 +18,9 @@ class Reproductor{
         bool modoAleatorio;
         int repeticion;
         ListaCancion listaReproduccion;
+
+        void guardar();
+
     public:
         //Constructor
         Reproductor();

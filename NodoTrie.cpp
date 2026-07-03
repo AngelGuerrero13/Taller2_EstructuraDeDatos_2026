@@ -27,11 +27,11 @@ void NodoTrie::setCaracter(char caracter){
     this->caracter = caracter;
 }
 
-void NodoTrie::setPrimeroHijo(NodoTrie* primerHijo){
+void NodoTrie::setPrimerHijo(NodoTrie* primerHijo){
     this->primerHijo = primerHijo;
 }
 
-void NodoTrie::setsiguienteHermano(NodoTrie* siguienteHermano){
+void NodoTrie::setSiguienteHermano(NodoTrie* siguienteHermano){
     this->siguienteHermano = siguienteHermano;
 }
 

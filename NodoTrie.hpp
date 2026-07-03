@@ -16,8 +16,8 @@ class NodoTrie{
         NodoTrie* getSiguienteHermano();
 
         void setCaracter(char c);
-        void setPrimeroHijo(NodoTrie* primerHijo);
-        void setsiguienteHermano(NodoTrie* siguienteHermano);
+        void setPrimerHijo(NodoTrie* primerHijo);
+        void setSiguienteHermano(NodoTrie* siguienteHermano);
 
         ~NodoTrie();
 };
