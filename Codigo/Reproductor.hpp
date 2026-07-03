@@ -6,6 +6,9 @@
 #include <string>
 #include "NodoCancion.hpp"
 #include "ListaCancion.hpp"
+#include "ArbolTrie.hpp"
+#include "MaxHeap.hpp"
+#include "MaxHeapArtista.hpp"
 
 
 using namespace std;
@@ -18,6 +21,7 @@ class Reproductor{
         bool modoAleatorio;
         int repeticion;
         ListaCancion listaReproduccion;
+        ArbolTrie* buscadorTrie;
 
         void guardar();
 
@@ -42,6 +46,8 @@ class Reproductor{
         void Repeticion();
         void ListaReproduccion();
         void listadoCanciones();
+        void menuBusqueda();
+        void menuRanking();
 
         //Metodos auxiliares
         void mezclarLista();
@@ -54,6 +60,9 @@ class Reproductor{
         void guardarEstado();
         void cargarEstado();
         void inicializar();
+        void reproducirDesdeBusqueda(Cancion* cancion);
+        void mostrarTop10Canciones();
+        void mostrarTop10Artistas();
         
         //Destructor
         ~Reproductor();

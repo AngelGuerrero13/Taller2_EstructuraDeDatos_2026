@@ -1,4 +1,5 @@
 #include "NodoTrie.hpp"
+using namespace std;
 
 class ArbolTrie{
     private:
@@ -7,7 +8,7 @@ class ArbolTrie{
         NodoTrie* buscarHijo( NodoTrie* padre,char c);
         NodoTrie* agregarHijo(NodoTrie* padre,char c);
         void limpiarMemoria(NodoTrie* nodo);
-        string ArbolTrie::minuscula(string palabra);
+        string minuscula(string palabra);
         void insertarSufijo(string sufijo, Cancion* cancion);
         bool contieneCancion(ListaCancion* lista, Cancion* cancion);
 

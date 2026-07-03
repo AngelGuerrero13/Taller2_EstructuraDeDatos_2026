@@ -6,6 +6,7 @@ Reproductor::Reproductor(){
     this->cancionReproduciendo = nullptr;
     this->modoAleatorio = false;
     this->repeticion = 1;
+    this->buscadorTrie = new ArbolTrie();
 }
 
 //Getters
@@ -49,7 +50,7 @@ void Reproductor::leerArchivoCancion(string archivoCancion){
         string duracion;
         string ubicacionArchivo;
         string repro;
-        int reproducciones;
+        int reproducciones = 0;
 
         getline(ss,idInterno,',');
         getline(ss,nombreCancion,',');
@@ -71,6 +72,7 @@ void Reproductor::leerArchivoCancion(string archivoCancion){
         Cancion* cancion = new Cancion(idInterno,nombreCancion,nombreArtista,nombreAlbum,anioCancion,duracionSegundos,ubicacionArchivo,reproducciones);
 
         this->canciones.insertarFinal(cancion);
+        this->buscadorTrie->registrarCancion(cancion);
 
     }
     archivo.close();
@@ -516,6 +518,7 @@ void Reproductor::reproducirSeleccion(int posicion){
     this->listaReproduccion.insertarFinal(cancionSeleccion);
     //El reproductor apunta a esta nueva cancion
     this->setCancionReproduciendo(this->listaReproduccion.getCabeza());
+    this->cancionReproduciendo->getCancion()->aumentarReproduccion();
 
     //Agregamos el resto de canciones
     NodoCancion* aux = this->canciones.getCabeza();
@@ -595,6 +598,7 @@ void Reproductor::agregarCancionRegistro(){
     Cancion* cancionNueva = new Cancion(idInterno,nombreCancion,nombreArtista,nombreAlbum,anio,duracionSegundos,ubicacion,0);
     //La agregamos al final de la lista de canciones para no leer nuevamente todo el archivo
     this->canciones.insertarFinal(cancionNueva);
+    this->buscadorTrie->registrarCancion(cancionNueva);
 
     //Abrimos el archivo en modo sobreescritura
     ofstream archivo("music_source.txt",ios::app);
@@ -792,6 +796,336 @@ void Reproductor::guardar(){
     }
 }
 
+void Reproductor::reproducirDesdeBusqueda(Cancion* cancion){
+
+    this->cancionReproduciendo = nullptr;
+    this->listaReproduccion.vaciarLista();
+    this->listaReproduccion.insertarFinal(cancion);
+    this->setCancionReproduciendo(this->listaReproduccion.getCabeza());
+    this->cancionReproduciendo->getCancion()->aumentarReproduccion();
+
+    NodoCancion* aux = this->canciones.getCabeza();
+
+    while(aux != nullptr){
+
+        if(aux->getCancion() != cancion){
+
+            this->listaReproduccion.insertarFinal(aux->getCancion());
+        }
+        aux = aux->getSiguiente();
+    }
+
+    mezclarLista();
+    this->reproduciendo = true;
+    guardarEstado();
+}
+
+void Reproductor::menuBusqueda(){
+
+    string textoBusqueda;
+    bool ejecutandoBusqueda = true;
+
+    while (ejecutandoBusqueda) {
+
+        cout << "========================================================"<<endl;
+        cout << "                 BUSQUEDA DE CANCIONES                  "<<endl;
+        cout << "========================================================"<<endl;
+        cout << "Buscar canciones que contengan (ENTER para salir): ";
+        
+        getline(cin, textoBusqueda);
+
+        if (textoBusqueda.empty()) {
+            return; 
+        }
+
+        ListaCancion* resultados = this->buscadorTrie->buscarSubCadena(textoBusqueda);
+
+        if (resultados->getCabeza() == nullptr) {
+
+            cout << "No se encontraron canciones que coincidan con " << textoBusqueda << "."<<endl;
+            cout << "Presione ENTER para continuar...";
+            cin.get();
+            delete resultados;
+            continue;
+        }
+
+        cout << "Canciones que contienen " << textoBusqueda << ":"<<endl;
+        resultados->verLista();
+
+        cout << "Opciones:"<<endl;
+        cout << "R<num> - Reproducir cancion seleccionada"<<endl;
+        cout << "A<num> - Agregar cancion seleccionada al final de la cola"<<endl;
+        cout << "F      - Repetir busqueda con un texto diferente"<<endl;
+        cout << "V      - Volver al menu principal"<<endl;
+        cout << "Ingrese Opcion: "<<endl;
+        
+        string opcion;
+        getline(cin, opcion);
+
+        if (opcion.empty()) {
+            delete resultados;
+            continue;
+        }
+
+        char letra = toupper(opcion[0]);
+
+        if (letra == 'V') {
+
+            ejecutandoBusqueda = false;
+
+        } else if (letra == 'F') {
+
+            delete resultados;
+
+            continue;
+
+        } else if (letra == 'R' && opcion.length() > 1) {
+
+            int pos = stoi(opcion.substr(1));
+            NodoCancion* nodo = resultados->seleccionarNodo(pos);
+
+            if (nodo != nullptr) {
+
+                reproducirDesdeBusqueda(nodo->getCancion());
+
+            } else {
+
+                cout << "Error: Posicion no valida."<<endl;
+                cin.get();
+
+            }
+
+        } else if (letra == 'A' && opcion.length() > 1) {
+
+            int pos = stoi(opcion.substr(1));
+            NodoCancion* nodo = resultados->seleccionarNodo(pos);
+
+            if (nodo != nullptr) {
+
+                this->listaReproduccion.insertarFinal(nodo->getCancion());
+                guardarEstado();
+                cout << "Cancion agregada a la lista actual."<<endl;
+                cin.get();
+                
+            } else {
+
+                cout << "Error: Posicion no valida."<<endl;
+                cin.get();
+            }
+        }
+        delete resultados;
+    }
+}
+
+void Reproductor::mostrarTop10Canciones(){
+
+    if (this->canciones.getCabeza() == nullptr) {
+        cout << "No hay canciones registradas en el sistema.\n";
+        return;
+    }
+
+    //Creamos el Heap con la capacidad total de canciones
+    MaxHeap heap(this->canciones.getTotal());
+
+    //Insertamos todas las canciones.
+    NodoCancion* aux = this->canciones.getCabeza();
+    while (aux != nullptr) {
+        heap.insertar(aux->getCancion());
+        aux = aux->getSiguiente();
+    }
+
+    //Extraemos las 10 mejores y las guardamos en una lista temporal
+    ListaCancion top10;
+    int contador = 1;
+    
+    cout << "========================================================"<<endl;
+    cout << "           TOP 10 CANCIONES MAS REPRODUCIDAS            "<<endl;
+    cout << "========================================================"<<endl;
+
+    while (!heap.estaVacio() && contador <= 10) {
+
+        Cancion* mejorCancion = heap.extraerMaximo();
+        
+        //Solo mostramos canciones que hayan sido escuchadas al menos 1 vez
+        if (mejorCancion->getReproducciones() == 0){
+            break; 
+        }
+
+        top10.insertarFinal(mejorCancion);
+
+        cout << contador << ". " << mejorCancion->getNombreCancion() 
+             << " - " << mejorCancion->getArtista() 
+             << " (" << mejorCancion->getReproducciones() << " reproducciones)"<<endl;
+
+        contador++;
+    }
+
+    if (top10.getTotal() == 0) {
+        cout << "Aun no has escuchado ninguna cancion."<<endl;
+        cout << "Presione ENTER para continuar...";
+        cin.get();
+        return;
+    }
+
+    //Submenú de interacción
+    bool enMenu = true;
+
+    while (enMenu) {
+
+        cout << "Opciones:"<<endl;
+        cout << "R<num> - Reproducir cancion del ranking"<<endl;
+        cout << "A<num> - Agregar cancion del ranking a la cola"<<endl;
+        cout << "V      - Volver"<<endl;
+        cout << "Ingrese Opcion: "<<endl;
+        
+        string opcion;
+        getline(cin, opcion);
+
+        if (opcion.empty()){
+            continue;
+        }
+
+        char letra = toupper(opcion[0]);
+
+        if (letra == 'V') {
+
+            enMenu = false;
+
+        } else if (letra == 'R' && opcion.length() > 1) {
+
+            int pos = stoi(opcion.substr(1));
+            NodoCancion* nodo = top10.seleccionarNodo(pos);
+
+            if (nodo != nullptr) {
+
+                reproducirDesdeBusqueda(nodo->getCancion());
+                cout << "Reproduciendo ahora..."<<endl;
+                enMenu = false; //Salimos para que el reproductor actualice la pantalla
+
+            } else {
+
+                cout << "Error: Posicion no valida."<<endl;
+            }
+
+        } else if (letra == 'A' && opcion.length() > 1) {
+
+            int pos = stoi(opcion.substr(1));
+            NodoCancion* nodo = top10.seleccionarNodo(pos);
+
+            if (nodo != nullptr) {
+
+                this->listaReproduccion.insertarFinal(nodo->getCancion());
+                guardarEstado();
+                cout << "Cancion agregada a la lista actual."<<endl;
+
+            } else {
+
+                cout << "Error: Posicion no valida."<<endl;
+            }
+        }
+    }
+}
+
+void Reproductor::mostrarTop10Artistas() {
+    
+    Artista* listaArtistas = nullptr; 
+
+    NodoCancion* aux = this->canciones.getCabeza();
+    while (aux != nullptr) {
+        
+        Cancion* c = aux->getCancion();
+        string nombreArtista = c->getArtista();
+
+        Artista* temp = listaArtistas;
+        Artista* encontrado = nullptr;
+
+        while (temp != nullptr) {
+
+            if (temp->getNombre() == nombreArtista) {
+                encontrado = temp;
+                break;
+            }
+            temp = temp->getSiguiente();
+        }
+
+        // Si no existe, lo creamos y lo agregamos a la lista
+        if (encontrado == nullptr) {
+
+            encontrado = new Artista(nombreArtista);
+            encontrado->setSiguiente(listaArtistas);
+            listaArtistas = encontrado;
+        }
+
+        // Agregamos la canción al artista
+        encontrado->agregarCancion(c);
+        aux = aux->getSiguiente();
+    }
+
+    // Insertamos todos los artistas
+    MaxHeapArtista heap(100);
+    Artista* iterador = listaArtistas;
+
+    while (iterador != nullptr) {
+        heap.insertar(iterador);
+        iterador = iterador->getSiguiente();
+    }
+
+    // Mostramos el Top 10
+    cout << "=== TOP 10 ARTISTAS ==="<<endl;
+    for (int i = 1; i <= 10 && !heap.estaVacio(); i++) {
+
+        Artista* topArtista = heap.extraerMaximo();
+        cout << i << ". " << topArtista->getNombre() << " (" << topArtista->getReproduccionesTotales() << " reproducciones)"<<endl;
+    }
+
+    while (listaArtistas != nullptr) {
+
+        Artista* siguiente = listaArtistas->getSiguiente();
+        delete listaArtistas; 
+        listaArtistas = siguiente;
+    }
+}
+
+void Reproductor::menuRanking(){
+
+    bool ejecutandoRanking = true;
+
+    while (ejecutandoRanking) {
+        
+        cout << "========================================================"<<endl;
+        cout << "                    RANKING TOP 10                      "<<endl;
+        cout << "========================================================"<<endl;
+        cout << "C - Ver Top 10 Canciones"<<endl;
+        cout << "A - Ver Top 10 Artistas"<<endl;
+        cout << "V - Volver al menu principal"<<endl;
+        cout << "Ingrese Opcion: ";
+
+        string opcion;
+        getline(cin, opcion);
+
+        if (opcion.empty()){
+            continue;
+        }
+
+        char letra = toupper(opcion[0]);
+
+        if (letra == 'V') {
+
+            ejecutandoRanking = false;
+
+        } else if (letra == 'C') {
+
+            mostrarTop10Canciones();
+
+        } else if (letra == 'A') {
+
+            mostrarTop10Artistas();
+
+        }
+    }
+    cout<<"--------------------------------------------------------"<<endl;
+}
+
 //Destructor
 Reproductor::~Reproductor(){
     //Guardamos el estado
@@ -800,4 +1134,6 @@ Reproductor::~Reproductor(){
     //Eliminamos las listas para liberar memoria
     this->listaReproduccion.vaciarLista();
     this->canciones.vaciarLista();
+
+    delete this->buscadorTrie;
 }
