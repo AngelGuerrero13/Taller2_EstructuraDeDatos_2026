@@ -591,7 +591,7 @@ void Reproductor::agregarCancionRegistro(){
     cout<<"Duracion de la cancion(en segundos): ";
     cin>>duracionSegundos;
 
-    cout<<"Ubicaciond el archivo: ";
+    cout<<"Ubicacion del archivo: ";
     getline(cin,ubicacion);
 
     //Creamos la nueva cancion
