@@ -6,8 +6,8 @@ MaxHeapArtista::MaxHeapArtista(int cap) {
     this->arreglo = new Artista*[cap];
 }
 
-MaxHeapArtista::~MaxHeapArtista() {
-    delete[] arreglo;
+int MaxHeapArtista::padre(int i){
+    return (i-1)/2;
 }
 
 void MaxHeapArtista::intercambiar(int i, int j) {
@@ -91,4 +91,15 @@ void MaxHeapArtista::hundir(int i) {
         hundir(mayor);
 
     }
+}
+
+bool MaxHeapArtista::estaVacio(){
+    if(this->tamanoActual = 0){
+        return true;
+    }
+    return false;
+}
+
+MaxHeapArtista::~MaxHeapArtista() {
+    delete[] arreglo;
 }
