@@ -1,3 +1,4 @@
+```mermaid
 classDiagram
     %% Clases Centrales del Sistema
     class Sistema {
@@ -216,3 +217,4 @@ classDiagram
     Artista "1" *-- "1" ArbolAVL : discografia
     ArbolAVL "1" *-- "*" NodoAVL : Posee
     NodoAVL "*" o-- "1" Cancion : Referencia a
+    ```
